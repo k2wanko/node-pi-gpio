@@ -63,19 +63,19 @@ var GPIO = module.exports = (function() {
   util.inherits(GPIO, EventEmitter);
 
   GPIO.prototype.value = function(val) {
-    var self = this;
-    return new Promise(function(resolve, reject) {
-      console.log('val', val);
-      resolve(self);
-    });
+    if (isNaN(Number(val))) {
+      return GPIO.read(_pin)
+    }
+
+    return GPIO.write(_pin, val);
   };
   
   GPIO.prototype.direction = function(val) {
     if(!val) {
-      return _direction;
+      return GPIO.getDirection(_pin);
     }
 
-    //ToDo: write
+    return GPIO.setDirection(_pin, val);
 
   };
   
@@ -151,7 +151,12 @@ GPIO.setDirection = function(pin, direction) {
 
 GPIO.write = function(pin, val) {
   var dir = makePath(pin);
-  pfs.writeFile(path.join(dir, 'value'), val);
+  return pfs.writeFile(path.join(dir, 'value'), val);
+};
+
+GPIO.read = function(pin, val) {
+  var dir = makePath(pin);
+  return pfs.readFile(path.join(dir, 'value'));
 };
 
 GPIO.util = {
