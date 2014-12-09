@@ -9,7 +9,8 @@
   "author": "k2wanko",
   "license": "MIT",
   "dependencies": {
-    "es6-promise": "^2.0.1"
+    "es6-promise": "^2.0.1",
+    "es6-promisify": "^1.1.1"
   },
   "devDependencies": {
     "coffee-script": "^1.8.0"
