@@ -1,0 +1,17 @@
+{
+  "name": "node-pi-gpio",
+  "version": "0.0.0",
+  "description": "GPIO wrapper for Raspberry Pi",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "k2wanko",
+  "license": "MIT",
+  "dependencies": {
+    "es6-promise": "^2.0.1"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.8.0"
+  }
+}
