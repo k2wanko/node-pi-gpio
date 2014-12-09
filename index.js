@@ -7,12 +7,16 @@ var fs = require('fs'),
     util = require('util');
 
 var pfs = {};
-['stat', 'writeFile']
+['stat', 'writeFile', 'readFile']
   .forEach(function(method) {
     pfs[method] = promisify(fs[method])
   });
 
 var gpioPath = '/sys/class/gpio/';
+
+function makePath(pin) {
+  return path.join(gpioPath, 'gpio' + pin);
+}
 
 var GPIO = module.exports = (function() {
 
@@ -46,9 +50,12 @@ var GPIO = module.exports = (function() {
     }
     
     _pin = pin;
-    _direction = direction;
+    _direction = direction = direction || 'in';
 
     GPIO.export(pin)
+      .then(function() {
+        return GPIO.setDirection(pin, direction)
+      })
       .then(done)
       .catch(done);
   }
@@ -93,7 +100,7 @@ GPIO.open = function(pin, direction) {
 };
 
 GPIO.isExport = function(pin) {
-  var path = GPIO.util.makePath(pin);
+  var path = makePath(pin);
   return new Promise(function(resolve, reject){
     pfs.stat(path)
       .then(function(stats) {
@@ -109,33 +116,37 @@ GPIO.isExport = function(pin) {
 };
 
 GPIO.export = function(pin) {
-  return new Promise(function(resolve, reject) {
-    GPIO.isExport(pin)
-      .then(function(isExport) {
-        if (isExport) {
-          return resolve();
-        }
-
-        var _path = path.join(gpioPath, 'export');
-        return pfs.writeFile(_path, pin).then(resolve)
-      })
-      .catch(reject);
-  });
+  return GPIO.isExport(pin)
+    .then(function(isExport) {
+      if (isExport) {
+        return null;
+      }
+      
+      var _path = path.join(gpioPath, 'export');
+      return pfs.writeFile(_path, pin);
+    });
 };
 
 GPIO.unexport = function(pin) {
-  return new Promise(function(resolve, reject) {
-    GPIO.isExport(pin)
-      .then(function(isExport) {
-        if (!isExport) {
-          return resolve();
-        }
+  return GPIO.isExport(pin)
+    .then(function(isExport) {
+      if (!isExport) {
+        return null;
+      }
+      
+      var _path = path.join(gpioPath, 'unexport');
+      return pfs.writeFile(_path, pin)
+    });
+};
 
-        var _path = path.join(gpioPath, 'unexport');
-        return pfs.writeFile(_path, pin).then(resolve)
-      })
-      .catch(reject);
-  });
+GPIO.getDirection = function(pin) {
+  var dir = makePath(pin);
+  return pfs.readFile(path.join(dir, 'direction'));
+};
+
+GPIO.setDirection = function(pin, direction) {
+  var dir = makePath(pin);
+  return pfs.writeFile(path.join(dir, 'direction'), direction);
 };
 
 GPIO.write = function(pin, val) {
@@ -144,12 +155,10 @@ GPIO.write = function(pin, val) {
 };
 
 GPIO.util = {
-  makePath: function(pin) {
-    return path.join(gpioPath, 'gpio' + pin);
-  },
+  makePath: makePath,
   delay: function(time, val) {
     return new Promise(function(resolve, reject) {
-      setTimeout(resolve(val), time);
+      setInterval(resolve.bind(null, val), time);
     });
   }
 };

@@ -5,6 +5,8 @@ pin = 24
 
 delay = GPIO.util.delay
 
+exit = process.exit.bind process
+
 GPIO.open pin, 'out'
 .then (gpio)->
   console.log 'open', gpio
