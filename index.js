@@ -50,13 +50,11 @@ var GPIO = module.exports = (function() {
     }
     
     _pin = pin;
-    _direction = direction = direction || 'in';
+    _direction = direction;
 
     GPIO.export(pin)
-      .then(function() {
-        return GPIO.setDirection(pin, direction)
-      })
-      .then(done)
+      .then(this.direction(direction))
+      .then(function() { done(); })
       .catch(done);
   }
 
@@ -79,12 +77,16 @@ var GPIO = module.exports = (function() {
 
   };
   
-  GPIO.prototype.close = function() {};
+  GPIO.prototype.close = function() {
+    return GPIO.unexport(_pin);
+  };
   
   return GPIO;
   
 })();
 
+GPIO.IN = 'in';
+GPIO.OUT = 'out';
 
 GPIO.open = function(pin, direction) {
   return new Promise(function(resolve, reject) {
