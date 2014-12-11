@@ -4,7 +4,8 @@
   "description": "GPIO wrapper for Raspberry Pi",
   "main": "gpio.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "example:l_chika": "coffee example/l_chika"
   },
   "author": "k2wanko",
   "license": "MIT",
