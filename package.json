@@ -1,6 +1,6 @@
 {
   "name": "node-pi-gpio",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "GPIO wrapper for Raspberry Pi",
   "main": "gpio.js",
   "scripts": {
@@ -20,6 +20,7 @@
   },
   "files": [
     "package.json",
-    "gpio.js"
+    "gpio.js",
+    "README.md"
   ]
 }
