@@ -19,6 +19,60 @@ function makePath(pin) {
   return path.join(gpioPath, 'gpio' + pin);
 }
 
+var Watcher = (function() {
+
+  function Watcher(pin, options, listener) {
+
+    this.pin = pin;
+    this.options = options || {
+      interval: 107
+    };
+    this.listener = listener;
+
+    Watchers[pin] = this;
+  }
+
+  Watcher.prototype.start = function() {
+    debug('Watcher', 'start', this.timer, !Watchers[this.pin]);
+    if (this.timer) {
+      return;
+    }
+
+    if(!Watchers[this.pin]) {
+      return;
+    }
+
+    var self = this;
+    var interval = this.options.interval;
+    var value;
+    this.timer = setInterval(function() {
+      GPIO.read(self.pin)
+        .then(function(val) {
+          if (value !== val) {
+            self.listener.call(null, val);
+            value = val;
+          }
+        });
+    }, interval);
+    return this;
+  };
+
+  Watcher.prototype.close = function() {
+    if (!this.timer) {
+      return;
+    }
+
+    clearInterval(this.timer);
+    this.timer = null;
+    return this;
+  };
+
+  return Watcher;
+  
+})();
+
+var Watchers = {};
+
 var GPIO = module.exports = (function() {
 
   var _pin = null;
@@ -37,8 +91,8 @@ var GPIO = module.exports = (function() {
 
     var self = this;
     var done = function(err) {
-      debug('done', 'err', err);
       if (err) {
+        debug('done', 'err', err.stack);
         return self.emit('error', err);
       }
 
@@ -53,11 +107,21 @@ var GPIO = module.exports = (function() {
       return done(new Error('Invalid option: direction'));
     }
     
-    _pin = pin;
-    _direction = direction;
+    _pin = this._pin = pin;
+    _direction = this._direction = direction;
 
     GPIO.export(pin)
       .then(this.direction(direction))
+      .then(function() {
+
+        if (direction !== GPIO.IN) return null;
+        
+        GPIO.watch(pin, function(val) {
+          debug('watch', 'val', val);
+          self.emit('change', val);
+        });
+        return null;
+      })
       .then(function() { done(); })
       .catch(done);
   }
@@ -65,27 +129,27 @@ var GPIO = module.exports = (function() {
   util.inherits(GPIO, EventEmitter);
 
   GPIO.prototype.value = function(val) {
-    debug('value', 'pin', _pin, 'val', val);
+    debug('value', 'pin', this._pin, 'val', val);
     if (isNaN(Number(val))) {
-      return GPIO.read(_pin)
+      return GPIO.read(this._pin)
     }
 
-    return GPIO.write(_pin, val);
+    return GPIO.write(this._pin, val);
   };
   
   GPIO.prototype.direction = function(val) {
-    debug('direction', 'pin', _pin, 'val', val);
+    debug('direction', 'pin', this._pin, 'val', val);
     
     if(!val) {
-      return GPIO.getDirection(_pin);
+      return GPIO.getDirection(this._pin);
     }
 
-    return GPIO.setDirection(_pin, val);
+    return GPIO.setDirection(this._pin, val);
 
   };
   
   GPIO.prototype.close = function() {
-    debug('close', 'pin', _pin);
+    debug('close', 'pin', this._pin);
     
     return GPIO.unexport(_pin);
   };
@@ -171,7 +235,20 @@ GPIO.write = function(pin, val) {
 
 GPIO.read = function(pin, val) {
   var dir = makePath(pin);
-  return pfs.readFile(path.join(dir, 'value'));
+  return pfs.readFile(path.join(dir, 'value')).then(function(res) {return res.toString('utf8')});
+};
+
+GPIO.watch = function(pin, listener) {
+  var dir = makePath(pin);
+  var options = {
+    interval: 10
+  };
+  var _path = path.join(dir, 'value');
+  debug('GPIO.watch', 'start', 'filename', _path);
+  new Watcher(pin, options, function(val) {
+    debug('GPIO.watch', 'change', val);
+    listener(val);
+  }).start();
 };
 
 GPIO.util = {
