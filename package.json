@@ -1,11 +1,12 @@
 {
   "name": "node-pi-gpio",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "GPIO wrapper for Raspberry Pi",
   "main": "gpio.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "example:l_chika": "coffee example/l_chika"
+    "example:l_chika": "coffee example/l_chika.coffee",
+    "example:button": "coffee example/button.coffee"
   },
   "author": "k2wanko",
   "license": "MIT",
@@ -16,5 +17,9 @@
   },
   "devDependencies": {
     "coffee-script": "^1.8.0"
-  }
+  },
+  "files": [
+    "package.json",
+    "gpio.js"
+  ]
 }
