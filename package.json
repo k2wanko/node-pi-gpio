@@ -1,6 +1,6 @@
 {
   "name": "node-pi-gpio",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "GPIO wrapper for Raspberry Pi",
   "main": "gpio.js",
   "scripts": {
@@ -8,8 +8,21 @@
     "example:l_chika": "coffee example/l_chika.coffee",
     "example:button": "coffee example/button.coffee"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/k2wanko/node-pi-gpio.git"
+  },
+  "keywords": [
+    "RaspberryPi",
+    "gpio",
+    "pi"
+  ],
   "author": "k2wanko",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/k2wanko/node-pi-gpio/issues"
+  },
+  "homepage": "https://github.com/k2wanko/node-pi-gpio",
   "dependencies": {
     "debug": "^2.1.0",
     "es6-promise": "^2.0.1",
