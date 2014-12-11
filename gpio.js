@@ -178,7 +178,7 @@ GPIO.util = {
   makePath: makePath,
   delay: function(time, val) {
     return new Promise(function(resolve, reject) {
-      setInterval(resolve.bind(null, val), time);
+      setTimeout(resolve.bind(null, val), time);
     });
   }
 };

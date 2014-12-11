@@ -1,20 +1,22 @@
 
 GPIO = require '../'
 
-{delay, exit} = require './util'
-
 pin = 24
 
-gpio = null
+time = 500
+
+_loop = (gpio, val)->
+  gpio.value val
+  setTimeout _loop, time, gpio, (unless val then 1 else 0)
+
 GPIO.open pin, 'out'
-.then (_gpio)->
-  gpio = _gpio
-  process.on 'exit', gpio.close
-  
-  return gpio.value 1
-.then -> delay 3000
-.then ->
-  gpio.value 0
-.then exit
+.then (gpio)->
+  process.on 'SIGINT', ->
+    gpio.value 0
+    gpio.close()
+    .then ->
+      process.exit()
+  _loop(gpio, 1)
+  return
 .catch (err)->
   console.log 'err', err.stack
