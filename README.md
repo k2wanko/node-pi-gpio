@@ -15,6 +15,10 @@ $ npm install -S node-pi-gpio
 L chika
 
 ```
+$ npm run example:l_chika
+```
+
+```
 GPIO = require 'node-pi-gpio'
 
 pin = 24
@@ -39,6 +43,10 @@ GPIO.open pin, 'out'
 ```
 
 button
+
+```
+$ npm run example:button
+```
 
 ```
 GPIO = require 'node-pi-gpio'
