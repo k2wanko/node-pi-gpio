@@ -4,7 +4,8 @@ var fs = require('fs'),
     Promise = require('es6-promise').Promise,
     promisify = require('es6-promisify'),
     EventEmitter = require('events').EventEmitter,
-    util = require('util');
+    util = require('util'),
+    debug = require('debug')('node-pi-gpio');
 
 var pfs = {};
 ['stat', 'writeFile', 'readFile']
@@ -25,6 +26,8 @@ var GPIO = module.exports = (function() {
 
   function GPIO(pin, direction) {
 
+    debug('init', 'pin', pin, 'direction', direction);
+    
     if (!(this instanceof GPIO)) {
       return new GPIO(pin, direction);
     }
@@ -34,6 +37,7 @@ var GPIO = module.exports = (function() {
 
     var self = this;
     var done = function(err) {
+      debug('done', 'err', err);
       if (err) {
         return self.emit('error', err);
       }
@@ -61,6 +65,7 @@ var GPIO = module.exports = (function() {
   util.inherits(GPIO, EventEmitter);
 
   GPIO.prototype.value = function(val) {
+    debug('value', 'pin', _pin, 'val', val);
     if (isNaN(Number(val))) {
       return GPIO.read(_pin)
     }
@@ -69,6 +74,8 @@ var GPIO = module.exports = (function() {
   };
   
   GPIO.prototype.direction = function(val) {
+    debug('direction', 'pin', _pin, 'val', val);
+    
     if(!val) {
       return GPIO.getDirection(_pin);
     }
@@ -78,6 +85,8 @@ var GPIO = module.exports = (function() {
   };
   
   GPIO.prototype.close = function() {
+    debug('close', 'pin', _pin);
+    
     return GPIO.unexport(_pin);
   };
   
@@ -126,6 +135,10 @@ GPIO.export = function(pin) {
       
       var _path = path.join(gpioPath, 'export');
       return pfs.writeFile(_path, pin);
+    })
+    .then(function(){
+      
+      return null;
     });
 };
 
